@@ -69,20 +69,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   let profileAvatarBase64 = null;
   let achievementCoverBase64 = null;
 
-  // Initialize DB and load website content
+  // Initialize DB
   try {
     db = new EPortfolioDB();
     await db.init();
     showToast('Portfolio loaded from database!', 'success');
-    
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    showToast('Failed to load database. Running in offline view.', 'error');
+  }
+
+  // Load website content and UI
+  try {
     // Initial Render
     await refreshAll();
     initThreeBackground();
     initAIChatbot();
     initGithubAccountLinking();
   } catch (error) {
-    console.error('Database initialization failed:', error);
-    showToast('Failed to load database. Running in offline view.', 'error');
+    console.error('UI initialization error:', error);
   }
 
   // Clear created object URLs to prevent memory leaks
@@ -464,11 +469,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Admin Drawer Toggling
+  // Admin Drawer Toggling & Authentication
+  const authModal = document.getElementById('auth-modal');
+  const authModalClose = document.getElementById('auth-modal-close');
+  const authModalCancel = document.getElementById('auth-modal-cancel');
+  const authModalLogin = document.getElementById('auth-modal-login');
+  const authModalTokenInput = document.getElementById('modal-auth-token');
+
   adminToggle.addEventListener('click', () => {
+    const existingToken = sessionStorage.getItem('github_token');
+    if (existingToken) {
+      openAdminDrawer();
+    } else {
+      authModal.classList.add('active');
+    }
+  });
+
+  function openAdminDrawer() {
     adminOverlay.classList.add('active');
-    // Set About Me as default active tab when opening
     switchAdminTab('pane-profile');
+  }
+
+  function closeAuthModal() {
+    authModal.classList.remove('active');
+    authModalTokenInput.value = '';
+  }
+
+  authModalClose.addEventListener('click', closeAuthModal);
+  authModalCancel.addEventListener('click', closeAuthModal);
+  
+  authModalLogin.addEventListener('click', () => {
+    const token = authModalTokenInput.value.trim();
+    if (token) {
+      sessionStorage.setItem('github_token', token);
+      closeAuthModal();
+      openAdminDrawer();
+      showToast('Logged in with GitHub Token.', 'success');
+    } else {
+      showToast('Please enter a valid GitHub token.', 'error');
+    }
   });
 
   adminClose.addEventListener('click', () => {
@@ -920,6 +959,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const displayEl = document.getElementById('github-username-display');
     if (displayEl) {
       displayEl.textContent = `@${activeUsername}`;
+      if (displayEl.tagName === 'A') {
+        displayEl.href = `https://github.com/${activeUsername}`;
+      }
     }
 
     const gridContainer = document.getElementById('github-contribution-grid');

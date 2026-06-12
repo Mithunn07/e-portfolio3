@@ -314,6 +314,39 @@ nav a:hover::after, nav a.active::after {
   -webkit-text-fill-color: transparent;
 }
 
+/* 3D Text Effect */
+.text-3d-wrapper {
+  margin: 15px 0 25px 0;
+  perspective: 800px;
+}
+
+.text-3d {
+  font-family: var(--font-headings);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  transform-style: preserve-3d;
+  transform: rotateX(15deg) rotateY(-10deg);
+  text-shadow: 
+    1px 1px 0 var(--accent-secondary),
+    2px 2px 0 var(--accent-secondary),
+    3px 3px 0 var(--accent-secondary),
+    4px 4px 0 var(--accent-primary),
+    5px 5px 0 var(--accent-primary),
+    6px 6px 1px rgba(0,0,0,.1),
+    0 0 5px rgba(0,0,0,.1),
+    1px 1px 3px rgba(0,0,0,.3),
+    3px 3px 5px rgba(0,0,0,.2),
+    5px 5px 10px rgba(0,0,0,.25),
+    10px 10px 10px rgba(0,0,0,.2);
+  transition: transform 0.3s ease;
+}
+
+.text-3d:hover {
+  transform: rotateX(5deg) rotateY(0deg) translateZ(20px);
+}
+
 .about-title {
   font-size: 20px;
   font-weight: 500;
