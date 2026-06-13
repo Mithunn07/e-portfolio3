@@ -1606,27 +1606,10 @@
         gap: 1rem;
       }
     }
-
-    /* Config warning banner */
-    #config-warning {
-      background: #ef4444;
-      color: white;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      position: sticky;
-      top: var(--nav-h);
-      z-index: 1000;
-      display: none;
-    }
   </style>
 </head>
 
 <body>
-
-  <!-- Config warning (hidden if configured) -->
-  <div id="config-warning">⚠️ FIREBASE NOT CONFIGURED: Please add your firebaseConfig to the JavaScript at the bottom of
-    the file.</div>
 
   <!-- ═══ NAVIGATION ═══ -->
   <nav id="main-nav">
@@ -1887,6 +1870,23 @@
           </div>
         </div>
       </div>
+      
+      <!-- CONTACT FORM -->
+      <div class="contact-form">
+        <form id="contact-form" onsubmit="handleContactSubmit(event)">
+          <div class="form-row">
+            <div class="form-group"><label for="c-name">Your Name</label><input type="text" id="c-name" name="name" placeholder="John Doe" required></div>
+            <div class="form-group"><label for="c-email">Your Email</label><input type="email" id="c-email" name="email" placeholder="john@example.com" required></div>
+          </div>
+          <div class="form-group"><label for="c-subject">Subject</label><input type="text" id="c-subject" name="subject" placeholder="Collaboration, internship, project..."></div>
+          <div class="form-group"><label for="c-message">Message</label><textarea id="c-message" name="message" placeholder="Tell me about your idea or just say hi!" required></textarea></div>
+          <div id="contact-form-status" style="margin-bottom:1rem; font-size:0.85rem; font-weight:600; display:none;"></div>
+          <button type="submit" class="btn-primary form-submit" id="form-submit-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send Message
+          </button>
+        </form>
+      </div>
     </div>
   </section>
 
@@ -1952,17 +1952,15 @@
   <script>
     'use strict';
 
-    // =========================================================================
-    // ⚠️ IMPORTANT: REPLACE THIS OBJECT WITH YOUR FIREBASE CONFIGURATION! ⚠️
-    // =========================================================================
     const firebaseConfig = {
-      // apiKey: "YOUR_API_KEY",
-      // authDomain: "YOUR_PROJECT.firebaseapp.com",
-      // databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-      // projectId: "YOUR_PROJECT",
-      // storageBucket: "YOUR_PROJECT.appspot.com",
-      // messagingSenderId: "123456789",
-      // appId: "1:123456789:web:abcdef"
+      apiKey: "AIzaSyBDZo3VQ11CBXb2IeYBpHYqcdKHgoBA5MY",
+      authDomain: "e-portfolio-d1014.firebaseapp.com",
+      databaseURL: "https://e-portfolio-d1014-default-rtdb.firebaseio.com",
+      projectId: "e-portfolio-d1014",
+      storageBucket: "e-portfolio-d1014.firebasestorage.app",
+      messagingSenderId: "484865136123",
+      appId: "1:484865136123:web:36826f099fad55ea36a75e",
+      measurementId: "G-5KYRMQLTQ5"
     };
     // =========================================================================
 
@@ -2399,6 +2397,59 @@
       t.style.transform = 'translateY(0)'; t.style.opacity = '1';
       clearTimeout(t._tid);
       t._tid = setTimeout(() => { t.style.transform = 'translateY(120px)'; t.style.opacity = '0'; }, duration);
+    }
+
+    // ═══ CONTACT FORM (FORMSPREE) ═══
+    async function handleContactSubmit(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const btn = document.getElementById('form-submit-btn');
+      const statusBox = document.getElementById('contact-form-status');
+      
+      // ⚠️ IMPORTANT: Replace this placeholder with your actual Formspree endpoint URL
+      const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdqkwbk';
+      
+      if(FORMSPREE_ENDPOINT.includes('YOUR_ENDPOINT_ID')) {
+         statusBox.style.display = 'block';
+         statusBox.style.color = '#ef4444';
+         statusBox.textContent = "Developer Error: Formspree endpoint not configured yet.";
+         return;
+      }
+      
+      const formData = new FormData(form);
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Sending...`;
+      btn.disabled = true;
+      statusBox.style.display = 'none';
+
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (res.ok) {
+          form.reset();
+          statusBox.style.display = 'block';
+          statusBox.style.color = 'var(--green)';
+          statusBox.textContent = "✅ Message sent successfully! I'll get back to you soon.";
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Sent!`;
+          btn.style.background = 'var(--green)';
+        } else {
+          throw new Error('Failed to send message.');
+        }
+      } catch (err) {
+        statusBox.style.display = 'block';
+        statusBox.style.color = '#ef4444';
+        statusBox.textContent = "❌ Oops! There was a problem submitting your form.";
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Message`;
+          btn.style.background = '';
+        }, 3000);
+      }
     }
 
     // UI Interactions
